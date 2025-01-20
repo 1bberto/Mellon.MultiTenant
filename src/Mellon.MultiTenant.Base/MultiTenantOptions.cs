@@ -8,6 +8,8 @@ using Microsoft.Extensions.Configuration;
 
 public class MultiTenantOptions
 {
+	private static readonly Lazy<HttpClient> _httpClientLazy = new(() => new HttpClient(), LazyThreadSafetyMode.ExecutionAndPublication);
+
 	public TenantSource TenantSource { get; set; } = TenantSource.Settings;
 
 	public string ApplicationName { get; set; }
@@ -67,9 +69,7 @@ public class MultiTenantOptions
 				request.Headers.Add("Authorization", endpointOptions.Authorization);
 			}
 
-			using var client = new HttpClient();
-
-			var result = await client.SendAsync(request);
+			var result = await _httpClientLazy.Value.SendAsync(request);
 
 			if (result.IsSuccessStatusCode)
 			{
